@@ -1,0 +1,119 @@
+import tp1_casaPintada.*
+
+describe "Tests respecto de la pintura en lata" {
+	
+	test "Latas de pintura necesarias para pintar 251 m2 sin aprovechar bien las latas" {
+		pinturaEnLata.metrosCuadradosAPintar(251)
+		assert.equals(6, pinturaEnLata.cantidadDeLatasAUtilizar())
+	}	
+	
+	test "Latas de pintura necesarias para pintar 250 m2 aprovechando bien las latas" {
+		pinturaEnLata.metrosCuadradosAPintar(250)
+		assert.equals(5, pinturaEnLata.cantidadDeLatasAUtilizar())
+	}
+	
+	test "Costo de pintura para habitación de 10 m2 desaprovechando las latas" {
+		pinturaEnLata.metrosCuadradosAPintar(10)
+		assert.equals(500, pinturaEnLata.costoTotalPinturaEnLata())
+	}
+	
+	test "Costo de pintura para habitación de 250 m2 aprovechando las latas" {
+		pinturaEnLata.metrosCuadradosAPintar(250)
+		assert.equals(2500, pinturaEnLata.costoTotalPinturaEnLata())
+	}		
+}
+
+describe "Tests respecto de los pintores" {
+	
+	test "Costo de mano de obra de Raúl por pintar 20 m2" {
+		raul.metrosCuadradosAPintar(20)
+		assert.equals(1400, raul.manoDeObra())
+	}
+	
+	test "Costo total de Raúl por pintar 20 m2, mano de obra más costo de pintura" {
+		pinturaEnLata.metrosCuadradosAPintar(20)
+		raul.metrosCuadradosAPintar(20)
+		assert.equals(1900, raul.tarifaTotalPorTrabajoRealizado())
+	}
+	
+	test "Costo total de Carla por pintar 25 m2" {
+		carla.metrosCuadradosAPintar(25)
+		assert.equals(2250, carla.tarifaTotalPorTrabajoRealizado())
+	}
+	
+	test "Costo total de Carla por pintar 26 m2" {
+		carla.metrosCuadradosAPintar(26)
+		assert.equals(1755, carla.tarifaTotalPorTrabajoRealizado())
+	}
+	
+	test "Costo de mano de obra de Venancio por pintar 32 m2" {
+		venancio.metrosCuadradosAPintar(32)
+		assert.equals(1376, venancio.manoDeObra())
+	}
+	
+	test "Costo total de Venancio por pintar 32 m2, mano de obra más costo de pintura" {
+		pinturaEnLata.metrosCuadradosAPintar(32)
+		venancio.metrosCuadradosAPintar(32)
+		assert.equals(1626, venancio.tarifaTotalPorTrabajoRealizado())
+	}
+}
+
+describe "Tests respecto de los ambientes" {
+	
+	test "Superficie de la cocina" {
+		assert.equals(21, aldo.cocinaMetrosCuadradosAPintar())
+	}
+	
+	test "Superficie de la habitación" {
+		assert.equals(20, aldo.habitacionMetrosCuadradosAPintar())
+	}	
+}
+
+describe "Tests respecto de Aldo" {
+	
+	test "Superficie total a pintar para Aldo, habitación más cocina" {
+		assert.equals(41, aldo.superficieTotalAPintar())
+	}
+	
+	test "Presupuesto máximo de Aldo" {
+		assert.equals(2200, aldo.presupuestoMaximo())
+	}
+	
+	test "Aldo no puede contratar a Raúl porque supera su presupuesto máximo ($2.200, el 20% de $11.000)" {
+		assert.notThat(raul.manoDeObra() <= aldo.presupuestoMaximo())
+	}
+	
+	test "Aldo ahorró $10.000 más, ahora si puede contratar a Raúl (su presupuesto máximo ahora es $4.200, 20% de $21.000)" {
+		assert.that(raul.manoDeObra() <= aldo.nuevoPresupuestoMaximo(10000))
+	}
+
+	test "Aldo ahorró $1.000 más, pintura cuesta $400, pero no puede contratar a Raúl porque supera su presupuesto máximo ($2.400, 20% de $12.000)" {
+		pinturaEnLata.precio(400)
+		assert.notThat(raul.tarifaTotalPorTrabajoRealizado() <= aldo.nuevoPresupuestoMaximo(1000))
+	}
+	
+	test "Aldo ahorró $4.000 más, y puede contratar a Carla (su presupuesto máximo ahora es $3.000, 20% de $15.000)" {
+		assert.that(carla.tarifaTotalPorTrabajoRealizado() <= aldo.nuevoPresupuestoMaximo(4000))
+	}
+	
+	test "Aldo puede contratar a Venancio con su presupuesto máximo inicial que es $2.200" {
+		assert.that(venancio.tarifaTotalPorTrabajoRealizado() <= aldo.presupuestoMaximo())
+	}
+}
+
+describe "Tests respecto de la pintura a granel" {
+	
+	test "Costo de pintura de una superficie de 10 m2" {
+		pinturaPorMayor.metrosCuadradosAPintar(10)
+		assert.equals(60, pinturaPorMayor.costoTotalPinturaPorMayor())
+	}
+	
+	test "Costo de pintura de una superficie de 11 m2" {
+		pinturaPorMayor.metrosCuadradosAPintar(11)
+		assert.equals(72, pinturaPorMayor.costoTotalPinturaPorMayor())
+	}
+	
+	test "Raúl trabaja con pintura a granel. Aldo ahorra $ 4.650 más y puede contratar a Raúl" {
+		assert.that(raul.tarifaTotalPorTrabajoRealizadoConPinturaAGranel() <= aldo.nuevoPresupuestoMaximo(4650))
+	}
+}
