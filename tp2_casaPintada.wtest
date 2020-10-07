@@ -1,0 +1,225 @@
+import tp2_casaPintada.*
+
+describe "Tests respecto de la pintura en lata" {
+
+	test "Latas de pintura necesarias para pintar 251 m2 sin aprovechar bien las latas" {
+		assert.equals(6, pinturaEnLata.latasNecesarias(251))
+	}	
+	
+	test "Latas de pintura necesarias para pintar 250 m2 aprovechando bien las latas" {
+		assert.equals(5, pinturaEnLata.latasNecesarias(250))
+	}
+	
+	test "Costo de pintura para habitación de 10 m2 desaprovechando las latas" {
+		assert.equals(500, pinturaEnLata.precio(10))
+	}
+	
+	test "Costo de pintura para habitación de 250 m2 aprovechando las latas" {
+		assert.equals(2500, pinturaEnLata.precio(250))
+	}		
+}
+
+describe "Tests respecto de los pintores" {
+	
+	test "Costo de mano de obra de Raúl por pintar 20 m2" {
+		assert.equals(1400, raul.manoDeObra(20))
+	}
+	
+	test "Costo total de Raúl por pintar 20 m2, mano de obra más costo de pintura" {
+		const casa = object {
+			method superficie() = 20
+		}
+		raul.usarPintura(pinturaEnLata.precio(casa.superficie()))
+		assert.equals(1900, raul.costoPorTrabajo(casa))
+	}
+	
+	test "Costo total de Carla por pintar 25 m2" {		
+		const casa = object {
+			method superficie() = 25
+		}
+		assert.equals(2250, carla.costoPorTrabajo(casa))
+	}
+	
+	test "Costo total de Carla por pintar 26 m2" {
+		const casa = object {
+			method superficie() = 26
+		}		
+		assert.equals(1755, carla.costoPorTrabajo(casa))
+	}
+	
+	test "Costo de mano de obra de Venancio por pintar 32 m2" {
+		assert.equals(1376, venancio.manoDeObra(32))
+	}
+	
+	test "Costo total de Venancio por pintar 32 m2, mano de obra más costo de pintura" {
+		const casa = object {
+			method superficie() = 32
+		}	
+		venancio.usarPintura(pinturaEnLata.precio(casa.superficie()))
+		assert.equals(1626, venancio.costoPorTrabajo(casa))
+	}
+}
+
+describe "Tests respecto de los ambientes" {
+
+	test "Superficie de la cocina" {
+		assert.equals(21, cocina.superficie())
+	}
+	
+	test "Superficie de la habitación" {
+		assert.equals(20, habitacion.superficie())
+	}	
+}
+
+describe "Tests respecto de Aldo" {
+
+	test "Superficie total a pintar para Aldo, habitación más cocina" {
+		assert.equals(41, casaAldo.superficie())
+	}
+	
+	test "Presupuesto máximo de Aldo" {
+		assert.equals(2200, aldo.presupuestoMaximo())
+	}
+	
+	test "Aldo no puede contratar a Raúl porque supera su presupuesto máximo ($2.200, el 20% de $11.000)" {
+		raul.usarPintura(pinturaEnLata.precio(casaAldo.superficie()))
+		assert.notThat(aldo.puedeContratarA(raul))
+	}
+	
+	test "Aldo ahorró $10.000 más, ahora si puede contratar a Raúl (su presupuesto máximo ahora es $4.200, 20% de $21.000)" {
+		raul.usarPintura(pinturaEnLata.precio(casaAldo.superficie()))
+		aldo.nuevosAhorros(10000)
+		assert.that(aldo.puedeContratarA(raul))
+	}
+
+	test "Aldo ahorró $1.000 más, pintura cuesta $400, pero no puede contratar a Raúl porque supera su presupuesto máximo ($2.400, 20% de $12.000)" {
+		aldo.nuevosAhorros(1000)
+		raul.precioPintura(400)
+		assert.notThat(aldo.puedeContratarA(raul))
+	}
+	
+	test "Aldo ahorró $4.000 más, y puede contratar a Carla (su presupuesto máximo ahora es $3.000, 20% de $15.000)" {
+		aldo.nuevosAhorros(4000)
+		assert.that(aldo.puedeContratarA(carla))
+	}
+	
+	test "Aldo puede contratar a Venancio con su presupuesto máximo inicial que es $2.200" {
+		venancio.usarPintura(pinturaEnLata.precio(casaAldo.superficie()))
+		assert.that(aldo.puedeContratarA(venancio))
+	}
+}
+
+describe "Tests respecto de la pintura a granel" {
+
+	test "Costo de pintura de una superficie de 10 m2" {
+		assert.equals(60, pinturaPorMayor.precio(10))
+	}
+	
+	test "Costo de pintura de una superficie de 11 m2" {
+		assert.equals(72, pinturaPorMayor.precio(11))
+	}
+	
+	test "Raúl trabaja con pintura a granel. Aldo ahorra $ 4.650 más y puede contratar a Raúl" {
+		raul.usarPintura(pinturaPorMayor.precio(casaAldo.superficie()))
+		aldo.nuevosAhorros(4650)
+		assert.that(aldo.puedeContratarA(raul))
+	}
+}
+
+describe "Tests nuevos contratistas" {
+	
+	test "Costo del trabajo de Verónica por la casa de Aldo" {
+	assert.equals(200000, veronica.costoPorTrabajo(casaAldo))		
+	}
+	
+	test "Costo del trabajo de Marcos por la casa de Aldo" {
+	assert.equals(100000, marcos.costoPorTrabajo(casaAldo))		
+	}
+	
+	test "Costo del trabajo de Marcos por una casa complicada de 3 pisos y 6 ambientes" {
+		const casa = object {
+			var property pisos = 3
+			var property cantidadAmbientes = 6
+	
+			method esComplicada() = pisos > 2
+		}
+		assert.equals(360000, marcos.costoPorTrabajo(casa))	
+	}
+	
+	test "Costo del trabajo de Francisca por la casa de Aldo" {
+	assert.equals(200, francisca.costoPorTrabajo(casaAldo))		
+	}
+
+	test "Costo del trabajo de Francisca por una casa complicada de 5 pisos y 4 ambientes" {
+		const casa = object {
+			var property pisos = 5
+			var property cantidadAmbientes = 4
+	
+			method esComplicada() = pisos > 2
+		}
+		assert.equals(800, francisca.costoPorTrabajo(casa))	
+	}
+	
+	test "Costo del trabajo de Jacques por una casa de 3 ambientes" {
+		const casa = object {
+			var property cantidadAmbientes = 3
+		}
+		assert.equals(300, jacques.costoPorTrabajo(casa))	
+	}
+
+	test "Costo del trabajo de Jacques por una casa de 5 ambientes" {
+		const casa = object {
+			var property cantidadAmbientes = 5
+		}
+		assert.equals(550, jacques.costoPorTrabajo(casa))	
+	}	
+	
+}
+
+describe "Tests casa Aldo" {
+	
+	test "Es complicada?" {
+		assert.notThat(casaAldo.esComplicada())
+	}
+	
+	test "Superficie de la casa" {
+		assert.equals(41, casaAldo.superficie())
+	}
+}
+
+describe "Tests adicionales para Aldo" {
+	
+	test "Qué contratistas puede contratar Aldo" {
+		const posiblesContrataciones = object {
+			method filtrar() = agencia.contratistas().filter {contratista => aldo.puedeContratarA(contratista)}
+		}
+		assert.equals(#{venancio,francisca,jacques},posiblesContrataciones.filtrar())
+	}
+	
+	test "Aldo contrata a Jacques y reduce su presupuesto máximo" {
+		aldo.contratarServicioDe(jacques)
+		assert.equals(2160, aldo.presupuestoMaximo())		
+	}
+	
+	test "Aldo contrata a Jacques y Francisca, gastos totales de Aldo en la última semana" {
+		aldo.contratarServicioDe(jacques)
+		aldo.contratarServicioDe(francisca)
+		aldo.gastosUltimaSemana()
+		assert.equals(400,aldo.gastos())		
+	}	
+	
+	test "Gastos de Aldo en la última semana" {
+		const jose = object {
+			const property fechacontratacion = new Date(day = 04, month = 09, year = 2020)
+			method costoPorTrabajo(casa) = 5000
+		}
+		aldo.contratarServicioDe(jose)
+		aldo.contratarServicioDe(francisca)
+		aldo.gastosUltimaSemana()
+		assert.equals(200,aldo.gastos())
+	}
+	
+	test "Aldo no puede contratar a Marcos porque supera su presupuesto" {
+		assert.notThat(aldo.puedeContratarA(marcos))
+	}
+}
