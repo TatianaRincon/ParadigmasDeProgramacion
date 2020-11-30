@@ -36,7 +36,7 @@ object plaza inherits EspacioUrbano {
 
 object plazoleta inherits EspacioUrbano {
 	var property espacioSinCesped = 15
-	var property procer // class Procer, San Martín object o const
+	var property procer
 	
 	override method espacioDeUsoEspecifico() = espacioSinCesped
 	
