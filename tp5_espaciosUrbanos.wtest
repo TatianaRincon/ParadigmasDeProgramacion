@@ -1,0 +1,172 @@
+import tp5_espaciosUrbanos.*
+
+describe "Tests para los espacios urbanos" {
+	
+	fixture {
+		plaza.espacioDeEsparcimiento(25)
+		plaza.cantidadCanchas(3)
+		plazoleta.espacioSinCesped(30)
+		plazoleta.procer("San Martín")
+		plazoleta.tieneVallado(true)
+		anfiteatro.escenario(40)
+		anfiteatro.capacidad(600)
+	}
+		
+	test "La plaza es un espacio grande, superficie de más de 50m2 y más de 2 canchas " {
+		assert.that(plaza.esGrande())
+	}
+	
+	test "La plazoleta es un espacio grande, superficie de más de 50m2, el prócer es San Martín y de noche cierra con llave (tiene vallado) " {
+		assert.that(plazoleta.esGrande())
+	}
+	
+	test "El anfiteatro es un espacio grande, superficie de más de 50m2 y la capacidad supera las 500 personas " {
+		assert.that(anfiteatro.esGrande())
+	}
+	
+	test "Multiespacio con una plaza, una plazoleta y un anfiteatro es grande, cumple todas las condiciones anteriores de cada espacio en particular" {
+		const espacio = new Multiespacio(espaciosUrbanos = [plaza,plazoleta,anfiteatro])
+		assert.that(espacio.esGrande())
+	}
+}
+
+describe "Tests de trabajadores" {
+	
+	test "Cambiar de profesion dinámicamente, de cerrajero a jardinero" {
+		const tito = new Trabajador(nombre = "Tito", profesion = cerrajero)
+		assert.equals(cerrajero,tito.profesion())
+		tito.profesion(jardinero)
+		assert.equals(jardinero,tito.profesion())
+	}
+	
+	test "El cerrajero lleva a cabo un trabajo, de no tener vallado, va a pasar a tenerlo y tarda solo 3 horas porque no es un espacio grande" {
+		assert.equals(false,plaza.tieneVallado())
+		const carlos = new Trabajador(nombre = "Carlos", profesion = cerrajero)
+		plaza.registrarTrabajo(carlos,carlos.profesion())
+		assert.equals(true,plaza.tieneVallado())
+		assert.equals(3,cerrajero.duracion(plaza))
+	}
+
+	test "El jardinero lleva a cabo un trabajo, trabaja con espacios urbanos verdes, plaza que no tiene canchas. Una vez cumplido su trabajo aumenta la valuación del espacio un 10%. La duración de su trabajo es 1 hora cada 10 metros cuadrados" {
+		plaza.cantidadCanchas(0)
+		assert.equals(10000,plaza.valuacion())
+		const jorgelina = new Trabajador(nombre = "Jorgelina", profesion = jardinero)
+		plaza.registrarTrabajo(jorgelina,jorgelina.profesion())
+		assert.equals(11000,plaza.valuacion())
+		assert.equals(5,jardinero.duracion(plaza))
+	}
+	
+	test "El jardinero lleva a cabo un trabajo, trabaja con espacios urbanos verdes, multiespacio con más de 3 espacios urbanos. Una vez cumplido su trabajo aumenta la valuación del espacio urbano un 10%. La duración de su trabajo es 1 hora cada 10 metros cuadrados" {
+		const multiespacio = new Multiespacio(espaciosUrbanos = [plaza, plaza, plazoleta, anfiteatro])
+		assert.equals(10000,multiespacio.valuacion())
+		const jorgelina = new Trabajador(nombre = "Jorgelina", profesion = jardinero)
+		multiespacio.registrarTrabajo(jorgelina,jorgelina.profesion())
+		assert.equals(11000,multiespacio.valuacion())
+		assert.equals(20,jardinero.duracion(multiespacio))
+		}
+		
+	test " Los encargados de limpieza llevan a cabo un trabajo, trabajan con espacios urbanos “limpiables”, como los anfiteatros grandes. Una vez cumplido su trabajo el espacio se valúa en $ 5.000 más. La duración de su trabajo es 8 horas fijo (un día de trabajo)." {
+		anfiteatro.capacidad(600)
+		assert.equals(10000,anfiteatro.valuacion())
+		const roman = new Trabajador(nombre = "Roman", profesion = encargadoDeLimpieza)
+		anfiteatro.registrarTrabajo(roman,roman.profesion())
+		assert.equals(15000,anfiteatro.valuacion())
+		assert.equals(8,encargadoDeLimpieza.duracion(anfiteatro))
+	}
+	
+	test " Los encargados de limpieza llevan a cabo un trabajo, trabajan con espacios urbanos “limpiables”, como las plazas. Una vez cumplido su trabajo el espacio se valúa en $ 5.000 más. La duración de su trabajo es 8 horas fijo (un día de trabajo)." {
+		assert.equals(10000,plaza.valuacion())
+		const roman = new Trabajador(nombre = "Roman", profesion = encargadoDeLimpieza)
+		plaza.registrarTrabajo(roman,roman.profesion())
+		assert.equals(15000,plaza.valuacion())
+		assert.equals(8,encargadoDeLimpieza.duracion(plaza))
+	}
+	
+	test "Registro de trabajos realizados" {
+		const tito = new Trabajador(nombre = "Tito", profesion = cerrajero)
+		plaza.registrarTrabajo(tito,tito.profesion())
+		assert.equals(1, plaza.trabajosRealizados().size())
+	}
+}
+
+describe "Tests trabajos realizados" {
+	
+	test "Validación de cerrajeros. Trabajan si el espacio no tiene vallado" {
+		plaza.tieneVallado(true)
+		const irene = new Trabajador(nombre = "Irene", profesion = cerrajero)
+		assert.throwsExceptionWithMessage("No se pudo registrar el trabajo porque no pasó la validación requerida", {=> plaza.registrarTrabajo(irene,irene.profesion())} )
+	}
+	
+	test "Validación de jardineros. Trabajan si es una plaza sin canchas" {
+		const valeria = new Trabajador(nombre = "Valeria", profesion = jardinero)
+		assert.throwsExceptionWithMessage("No se pudo registrar el trabajo porque no pasó la validación requerida", {=> plaza.registrarTrabajo(valeria,valeria.profesion())} )
+	}
+	
+	test "Validación de jardineros. Trabajan si es un multiespacio con más de 3 espacios" {
+		const multiespacio = new Multiespacio(espaciosUrbanos = [plaza, plazoleta, anfiteatro])
+		const marcos = new Trabajador(nombre = "Marcos", profesion = jardinero)
+		assert.throwsExceptionWithMessage("No se pudo registrar el trabajo porque no pasó la validación requerida", {=> multiespacio.registrarTrabajo(marcos,marcos.profesion())} )
+	}
+	
+	test "Validación de encargados de limpieza. Trabajan si es un anfiteatro grande" {
+		const carla = new Trabajador(nombre = "Carla", profesion = encargadoDeLimpieza)
+		assert.throwsExceptionWithMessage("No se pudo registrar el trabajo porque no pasó la validación requerida", {=> anfiteatro.registrarTrabajo(carla,carla.profesion())} )
+	}
+	
+	test "Validación de encargados de limpieza. Trabajan si es una plaza" {
+		assert.that(encargadoDeLimpieza.trabajaSi(plaza))
+	}
+
+	test "Validación de encargados de limpieza. No trabajan si son plazoletas o multiespacios" {
+		const agustina = new Trabajador(nombre = "Agustina", profesion = encargadoDeLimpieza)
+		assert.throwsExceptionWithMessage("No se pudo registrar el trabajo porque no pasó la validación requerida", {=> plazoleta.registrarTrabajo(agustina,agustina.profesion())} )
+		assert.throwsExceptionWithMessage("No se pudo registrar el trabajo porque no pasó la validación requerida", {=> new Multiespacio().registrarTrabajo(agustina,agustina.profesion())} )
+	}
+}
+
+describe "Espacios de uso intensivo y trabajos heavies" {
+	
+	const tito = new Trabajador(nombre = "Tito", profesion = cerrajero)
+	const claudia = new Trabajador(nombre = "Claudia", profesion = jardinero)
+	const jorge = new Trabajador(nombre = "Jorge", profesion = encargadoDeLimpieza)
+	
+	test "Trabajo heavy para un cerrajero. Tardó más de 5hs o costó más de $10.000" {
+		cerrajero.tarifaPorHora(2500)
+		anfiteatro.capacidad(550)	
+		assert.that(cerrajero.esHeavy(anfiteatro))
+	}
+	
+	test "Trabajo heavy para un encargado de limpieza. Costó más de $10.000" {
+		encargadoDeLimpieza.tarifaPorHora(2000)	
+		assert.that(encargadoDeLimpieza.esHeavy(plazoleta))
+	}
+	
+	test "Trabajo heavy para un jardinero. Costó más de $10.000" {
+		jardinero.tarifa(11000)
+		assert.that(jardinero.esHeavy(plaza))
+	}
+	
+	test "Trabajos realizados en el último mes" {
+		plaza.cantidadCanchas(0)
+		plaza.registrarTrabajo(tito,tito.profesion())
+		plaza.registrarTrabajo(claudia,claudia.profesion())
+		plaza.registrarTrabajo(jorge,jorge.profesion())
+		plaza.trabajosRealizados().add(new Trabajo(fecha = new Date(day=21,month=09,year=2020), trabajador = "Carlos", profesion = encargadoDeLimpieza, duracion = 8, costo = 800))
+		
+		assert.equals(3,plaza.trabajosUltimoMes().size())
+	}
+	
+	test "Espacio de uso intensivo. En el último mes se le hicieron más de 5 trabajos heavies" {
+		plaza.cantidadCanchas(0)
+		cerrajero.tarifaPorHora(5000)
+		encargadoDeLimpieza.tarifaPorHora(2000)
+		jardinero.tarifa(11000)	
+		plaza.registrarTrabajo(tito,tito.profesion())
+		plaza.registrarTrabajo(claudia,claudia.profesion())
+		plaza.registrarTrabajo(jorge,jorge.profesion())
+		plaza.registrarTrabajo(claudia,claudia.profesion())
+		plaza.registrarTrabajo(jorge,jorge.profesion())
+		plaza.registrarTrabajo(claudia,claudia.profesion())
+		assert.that(plaza.usoIntensivo())
+	}
+}
