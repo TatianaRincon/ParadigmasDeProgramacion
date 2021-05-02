@@ -1,3 +1,3 @@
 # ParadigmasDeProgramacion
 Proyecto de programación orientada a objetos en plataforma Wollok
-Materia realizada de oyente - Agosto 2020
+- Oyente en materia de la carrera de Ingeniería en Sistemas de la UTN FRBA - Agosto 2020
